@@ -1,100 +1,127 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import random
-import markovify
 
 app = Flask(__name__)
-CORS(app) 
+CORS(app)
 
 # Function to generate random JSON responses
 def generate_random_response():
-    names = ["Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Helen", "Ivy", "Jack", "Kate", "Liam", "Mia", "Noah", "Olivia", "Sophia", "Thomas", "Victoria", "William", "Zoe"]
-    cities = ["New York", "Los Angeles", "Chicago", "Houston", "San Francisco", "Miami", "Seattle", "Boston", "Denver", "Atlanta", "Dallas", "Philadelphia", "Phoenix", "Detroit", "Las Vegas"]
     data = [
-    {
-        "Product": "Laptop",
-        "Price (USD)": 800,
-        "Quantity": 10,
-        "Category": "Electronics"
-    },
-    {
-        "Product": "T-shirt",
-        "Price (USD)": 20,
-        "Quantity": 50,
-        "Category": "Clothing"
-    },
-    {
-        "Product": "Coffee Maker",
-        "Price (USD)": 50,
-        "Quantity": 8,
-        "Category": "Appliances"
-    },
-    {
-        "Product": "Running Shoes",
-        "Price (USD)": 75,
-        "Quantity": 20,
-        "Category": "Footwear"
-    },
-    {
-        "Product": "Smartphone",
-        "Price (USD)": 600,
-        "Quantity": 15,
-        "Category": "Electronics"
-    },
-    {
-        "Product": "Headphones",
-        "Price (USD)": 30,
-        "Quantity": 25,
-        "Category": "Electronics"
-    }
+        {
+            "Product": "Laptop",
+            "Price (USD)": 800,
+            "Quantity": 10,
+            "Category": "Electronics"
+        },
+        {
+            "Product": "T-shirt",
+            "Price (USD)": 20,
+            "Quantity": 50,
+            "Category": "Clothing"
+        },
+        {
+            "Product": "Coffee Maker",
+            "Price (USD)": 50,
+            "Quantity": 8,
+            "Category": "Appliances"
+        },
+        {
+            "Product": "Running Shoes",
+            "Price (USD)": 75,
+            "Quantity": 20,
+            "Category": "Footwear"
+        },
+        {
+            "Product": "Smartphone",
+            "Price (USD)": 600,
+            "Quantity": 15,
+            "Category": "Electronics"
+        },
+        {
+            "Product": "Headphones",
+            "Price (USD)": 30,
+            "Quantity": 25,
+            "Category": "Electronics"
+        }
     ]
 
-    response_type = random.choice(["text", "array"])
-    if response_type == "text":
-        with open("corpus.txt", "r") as f:
-            text_model = markovify.Text(f, state_size=2)
+    response_type = random.choice([1, 2])
 
-        random_sentence = text_model.make_sentence()
+    if response_type == 1:
+        output = []
+        for item in data:
+            item = {
+                "Product": str(item["Product"]),
+                "Price (USD)": str(item["Price (USD)"]),
+                "Quantity": str(item["Quantity"]),
+                "Category": str(item["Category"])
+            }
+            output.append(item)
 
-        content = "".join(random_sentence)
     else:
-        content = []
+        output = [
+            {
+                "Name": "First Name-CM16 M16 L16",
+                "Institution ID": 136,
+                "Cash Accounts": [
+                    {
+                        "number": "AS3431124124",
+                        "currency": "USD",
+                        "balance": 0.0,
+                        "blockAmount": 0.0
+                    }
+                ]
+            },
+            {
+                "Name": "Ravindu Senarathna",
+                "Institution ID": 136,
+                "Cash Accounts": [
+                    {
+                        "number": "AS3431124124",
+                        "currency": "USD",
+                        "balance": 0.0,
+                        "blockAmount": 0.0
+                    }
+                ]
+            }
+        ]
+    
+    return {"output": {"output" : {"content": output, "type": "array"}}}
 
-        random_value = random.randint(1, 4)
-        if random_value == 1:
-            for i in range(4):
-                item = {
-                    "Customer ID": str(62591 + i),
-                    "Number": f"ASI{random.randint(100000000, 999999999)}",
-                    "Name": str(names[i]),
-                    "Display Name": str(names[i]),
-                    "Institution ID": "136",
+
+# Function to generate random steps for admin-assist
+def generate_admin_assist_response():
+    steps = [
+        "Step 1: Do something",
+        "Step 2: Do something else",
+        "Step 3: More steps here",
+        "Step 4: And another step"
+    ]
+
+    steps_as_string = "\n".join(steps)
+
+    return {"output": {"content": steps_as_string, "type": "text"}}
+
+# Function to generate response for "/task/invoke"
+def generate_task_response():
+    task_response = {
+        "output": {
+            "text": [
+                {
+                    "symbol": "APPL",
+                    "order_side": "sell",
+                    "qty": 20
                 }
-                content.append(item)
-        
-        elif random_value == 2:
-            for i in range(5):
-                item = {
-                    "Name": str(names[i * -1]),
-                    "Age": str(random.randint(20, 60)),
-                    "City": str(cities[random.randint(0, len(cities) - 1)])
-                }
-                content.append(item)
-        
-        else:
-            for item in data:
-                item = {
-                    "Product": str(item["Product"]),
-                    "Price (USD)": str(item["Price (USD)"]),
-                    "Quantity": str(item["Quantity"]),
-                    "Category": str( item["Category"])
-                }
-                content.append(item)
+            ]
+        },
+        "callback_events": []
+    }
+
+    return task_response
 
 
-    return {"type": response_type, "content": content}
-
-@app.route('/random_response', methods=['POST'])
+@app.route('/dynamic-data-retrieve/invoke', methods=['POST'])
 def random_response():
     # Accept JSON request
     request_data = request.get_json()
@@ -104,5 +131,27 @@ def random_response():
 
     return jsonify(response)
 
+@app.route('/admin-assist/invoke', methods=['POST'])
+def admin_assist_response():
+    # Accept JSON request
+    request_data = request.get_json()
+
+    # Generate random admin-assist response
+    response = generate_admin_assist_response()
+
+    return jsonify(response)
+
+@app.route('/task/invoke', methods=['POST'])
+def task_response():
+    # Accept JSON request
+    request_data = request.get_json()
+
+    # Generate response for "/task/invoke"
+    response = generate_task_response()
+
+    return jsonify(response)
+
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=8000)
